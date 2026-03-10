@@ -277,7 +277,13 @@ with col_title:
     st.markdown('<div class="sub-heading">Classifies support tickets by urgency, sentiment, issue type, and automation potential in real time.</div>', unsafe_allow_html=True)
 
 # ── API Key ───────────────────────────────────────────────────────────────────
-api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+# Read from Streamlit secrets first, then env var, then manual input
+api_key = ""
+try:
+    api_key = st.secrets["ANTHROPIC_API_KEY"]
+except Exception:
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+
 if not api_key:
     with st.expander("🔑 Enter your Anthropic API Key", expanded=True):
         api_key = st.text_input("API Key", type="password", placeholder="sk-ant-...", label_visibility="collapsed")
