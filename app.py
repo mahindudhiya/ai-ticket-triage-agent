@@ -296,20 +296,28 @@ tab1, tab2, tab3 = st.tabs(["  Single Ticket  ", "  Batch Demo  ", "  How It Wor
 
 # ── TAB 1: Single Ticket ──────────────────────────────────────────────────────
 with tab1:
+    # Process any pending example load before widgets render
+    if st.session_state.get("_pending_example"):
+        ex = st.session_state.pop("_pending_example")
+        st.session_state["_subject"] = ex["subject"]
+        st.session_state["_description"] = ex["description"]
+        st.session_state["_channel"] = ex["channel"]
+
     col_form, col_result = st.columns([1, 1], gap="large")
 
     with col_form:
         st.markdown("#### Paste a support ticket")
 
-        subject = st.text_input("Subject line", placeholder="e.g. Can't log into my account")
+        subject = st.text_input("Subject line", key="_subject", placeholder="e.g. Can't log into my account")
 
         description = st.text_area(
             "Ticket description",
+            key="_description",
             placeholder="e.g. I've been trying to log in for the past hour and keep getting an invalid credentials error...",
             height=160
         )
 
-        channel = st.selectbox("Channel", ["email", "web", "chat", "phone"])
+        channel = st.selectbox("Channel", ["email", "web", "chat", "phone"], key="_channel")
 
         # Example tickets
         st.markdown('<div class="result-label" style="margin-top:16px">Try an example</div>', unsafe_allow_html=True)
@@ -333,22 +341,18 @@ with tab1:
             }
         }
 
-        selected_example = None
         with ex_col1:
             if st.button("🔴 Security", use_container_width=True):
-                selected_example = examples["🔴 Security breach"]
+                st.session_state["_pending_example"] = examples["🔴 Security breach"]
+                st.rerun()
         with ex_col2:
             if st.button("🟡 Billing", use_container_width=True):
-                selected_example = examples["🟡 Billing issue"]
+                st.session_state["_pending_example"] = examples["🟡 Billing issue"]
+                st.rerun()
         with ex_col3:
             if st.button("🟢 FAQ", use_container_width=True):
-                selected_example = examples["🟢 Simple FAQ"]
-
-        if selected_example:
-            subject = selected_example["subject"]
-            description = selected_example["description"]
-            channel = selected_example["channel"]
-            st.rerun()
+                st.session_state["_pending_example"] = examples["🟢 Simple FAQ"]
+                st.rerun()
 
         st.markdown("")
         run_btn = st.button("⚡ Triage this ticket", use_container_width=True)
